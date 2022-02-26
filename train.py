@@ -169,7 +169,7 @@ def main():
         return model
 
     num_classes = len(class_names)
-    model_ft = torchvision.models.resnet50(pretrained=False)
+    model_ft = torchvision.models.resnet50(pretrained=True)
     num_ftrs = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_ftrs, num_classes)    # Set the size of output to be num_classes
 
