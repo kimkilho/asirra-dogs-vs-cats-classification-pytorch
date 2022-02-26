@@ -28,7 +28,7 @@ CLASS_NAMES_DICT = {
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=256)
-    parser.add_argument('--num_epochs', type=int, default=50)
+    parser.add_argument('--num_epochs', type=int, default=30)
     parser.add_argument('--init_learning_rate', type=float, default=0.0003)
     # parser.add_argument('--momentum', type=float, default=0.9)
     # parser.add_argument('--weight_decay', type=float, default=0.0005)
@@ -46,11 +46,11 @@ def main():
         os.makedirs(dst_model_dir)
     dst_model_path = osp.join(dst_model_dir, '{0}_ResNet50.pth'.format(dataset_name))
 
-    src_trainval_img_dir = osp.join(SRC_DATA_ROOT_DIR, 'train-overfit-samples')    # FIXME
+    src_trainval_img_dir = osp.join(SRC_DATA_ROOT_DIR, 'train')    # FIXME
     trainval_img_filenames = os.listdir(src_trainval_img_dir)
     random.shuffle(trainval_img_filenames)
 
-    val_ratio = 0.0    # FIXME: 0.2
+    val_ratio = 0.2    # FIXME
     if val_ratio > 0:
         val_size = int(len(trainval_img_filenames) * val_ratio)
         val_img_filenames = trainval_img_filenames[:val_size]
@@ -182,7 +182,7 @@ def main():
     # Train and evaluate
     model_ft = train_model(model_ft, criterion, optimizer_ft,
                            model_path=dst_model_path, num_epochs=args.num_epochs)
-    torch.save(model_ft.state_dict(), dst_model_path)
+    torch.save(model_ft, dst_model_path)    # Save the entire model using Python's pickle
 
     print('')
 
