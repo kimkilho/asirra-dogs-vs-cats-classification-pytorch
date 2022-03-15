@@ -119,3 +119,6 @@ data/
 
 # Swap files
 *.swp
+
+# Config file from Azure ML
+ws-config.json
