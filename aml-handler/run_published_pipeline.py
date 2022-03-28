@@ -9,50 +9,55 @@ from azureml.pipeline.core import PublishedPipeline
 from azureml.core.authentication import InteractiveLoginAuthentication
 
 
-workspace = Workspace.from_config(path='./ws-config.json')
-# print(PublishedPipeline.list(workspace))
-pipeline_id = '348f2d00-3852-44a1-b08d-813e226e94ae'    # FIXME
-published_pipeline = PublishedPipeline.get(workspace, pipeline_id)
+if __name__ == '__main__':
+    # Configure workspace
+    workspace = Workspace.from_config(path='./ws-config.json')
 
-auth = InteractiveLoginAuthentication()
-aad_token = auth.get_authentication_header()
+    # Load published pipeline
+    # print(PublishedPipeline.list(workspace))
+    pipeline_id = '348f2d00-3852-44a1-b08d-813e226e94ae'    # FIXME
+    published_pipeline = PublishedPipeline.get(workspace, pipeline_id)
 
-rest_endpoint = published_pipeline.endpoint
+    auth = InteractiveLoginAuthentication()
+    aad_token = auth.get_authentication_header()
 
-# Specify the parameters when running the pipeline
-response = requests.post(
-    rest_endpoint,
-    headers=aad_token,
-    json={
-        'ExperimentName': 'asirra-ResNet50 training exp',
-        'RunSource': 'SDK',
-        'ParameterAssignments': {'num_epochs': 3},    # FIXME
-    }
-)
+    rest_endpoint = published_pipeline.endpoint
 
-try:
-    response.raise_for_status()
-except Exception:
-    raise Exception(
-        'Received bad response from the endpoint: {}\n'
-        'Response Code: {}\n'
-        'Headers: {}\n'
-        'Content: {}'.format(
-            rest_endpoint, response.status_code, response.headers, response.content
-        )
+    # Specify the parameters when running the pipeline
+    response = requests.post(
+        rest_endpoint,
+        headers=aad_token,
+        json={
+            'ExperimentName': 'asirra-ResNet50 training exp',
+            'RunSource': 'SDK',
+            'ParameterAssignments': {'num_epochs': 3},    # FIXME
+        }
     )
 
-run_id = response.json().get('Id')
-print('Submitted pipeline run: ', run_id)
+    try:
+        response.raise_for_status()
+    except Exception:
+        raise Exception(
+            'Received bad response from the endpoint: {}\n'
+            'Response Code: {}\n'
+            'Headers: {}\n'
+            'Content: {}'.format(
+                rest_endpoint, response.status_code, response.headers, response.content
+            )
+        )
 
-run = Run.get(workspace, run_id)
-run.wait_for_completion(show_output=True)
+    run_id = response.json().get('Id')
+    print('Submitted pipeline run: ', run_id)
 
-model = run.find_step_run('train step')[0].register_model(
-    model_name='asirra-ResNet50',
-    model_path='outputs/asirra_ResNet50.pth',
-)
-# model = run.register_model(model_name='asirra-ResNet50',
-#                            model_path='outputs/asirra_ResNet50.pth')
+    run = Run.get(workspace, run_id)
+    run.wait_for_completion(show_output=True)
 
-print(model.name, model.id, model.version, sep='\t')
+    model = run.find_step_run('train step')[0].register_model(
+        model_name='asirra-ResNet50',
+        model_path='outputs/asirra_ResNet50.pth',
+    )
+    # model = run.register_model(model_name='asirra-ResNet50',
+    #                            model_path='outputs/asirra_ResNet50.pth')
+
+    # print(model.name, model.id, model.version, sep='\t')
+    print('Registered model id: {}'.format(model.id))
