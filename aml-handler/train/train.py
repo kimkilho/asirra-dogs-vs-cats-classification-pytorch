@@ -41,7 +41,8 @@ def main():
     dataset_name = 'asirra'
     data_root_dir = args.data_root_dir
 
-    dst_model_dir = osp.join(os.getcwd(), 'outputs')
+    # dst_model_dir = osp.join(os.getcwd(), 'outputs')
+    dst_model_dir = './outputs'
     if not osp.exists(dst_model_dir):
         os.makedirs(dst_model_dir)
     dst_model_path = osp.join(dst_model_dir, '{0}_ResNet50.pth'.format(dataset_name))
