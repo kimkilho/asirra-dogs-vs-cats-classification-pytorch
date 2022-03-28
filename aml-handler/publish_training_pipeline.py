@@ -11,7 +11,9 @@ from azureml.data.datapath import DataPath
 from azureml.core.compute import AmlCompute
 from azureml.core.compute_target import ComputeTargetException
 from azureml.pipeline.steps import PythonScriptStep
-from azureml.pipeline.core import Pipeline
+from azureml.pipeline.core import (
+    Pipeline, PipelineParameter
+)
 
 
 def get_or_create_compute_target(ws, use_gpu=False):
@@ -61,6 +63,7 @@ if __name__ == '__main__':
     script_folder = './train'
     asirra_ds_input = asirra_ds.as_named_input('asirra_ds_input')    # type: DatasetConsumptionConfig
 
+    # Training configuration
     train_cfg = ScriptRunConfig(
         source_directory=script_folder,
         script='train.py',
@@ -68,11 +71,14 @@ if __name__ == '__main__':
         environment=train_env,
     )
 
+    # Hyper-parameters for a training run
+    num_epochs_param = PipelineParameter(name='num_epochs', default_value=10)
+
     train_step = PythonScriptStep(
         name='train step',
         arguments=['--data_root_dir', asirra_ds_input.as_mount(),
                    '--batch_size', 64,
-                   '--num_epochs', 30,
+                   '--num_epochs', num_epochs_param,
                    '--init_learning_rate', 0.0003],
         source_directory=train_cfg.source_directory,
         script_name=train_cfg.script,
@@ -83,7 +89,16 @@ if __name__ == '__main__':
     # Create and run the pipeline
     pipeline = Pipeline(workspace, steps=[train_step])
 
-    # Create an experiment to run the pipeline
-    exp = Experiment(workspace=workspace, name='asirra-ResNet50')
-    run = exp.submit(pipeline)
-    run.wait_for_completion(show_output=True)
+    # Publish the training pipeline
+    published_pipeline = pipeline.publish(
+        name='asirra-ResNet50 trainer',
+        description='Training pipeline for ResNet-50 model on Asirra dataset',
+        continue_on_step_failure=True,
+    )
+
+    print('Published pipeline id: {}'.format(published_pipeline.id))
+
+    # # Create an experiment to run the pipeline
+    # exp = Experiment(workspace=workspace, name='asirra-ResNet50')
+    # run = exp.submit(pipeline)
+    # run.wait_for_completion(show_output=True)
