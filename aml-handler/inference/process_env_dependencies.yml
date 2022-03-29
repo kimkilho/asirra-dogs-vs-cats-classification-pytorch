@@ -1,0 +1,9 @@
+name: process-env
+dependencies:
+- python=3.8.12
+- pip:
+  - azureml-defaults
+  - azureml-core
+  - azureml-dataset-runtime
+  - numpy==1.21.3
+  - Pillow==8.4.0

@@ -43,7 +43,7 @@ def get_or_create_compute_target(ws, use_gpu=False):
 
 if __name__ == '__main__':
     # Configure workspace
-    workspace = Workspace.from_config(path='./ws-config.json')
+    workspace = Workspace.from_config(path='../ws-config.json')
 
     compute_target = get_or_create_compute_target(workspace, use_gpu=True)
     # Can poll for a minimum number of nodes and for a specific timeout.
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     # Create the configuration for training
     train_env = Environment.from_conda_specification(
-        name='torch-env', file_path='./torch_conda_dependencies.yml'
+        name='torch-env', file_path='train_env_dependencies.yml'
     )
 
     # Specify the pipeline step
@@ -97,8 +97,3 @@ if __name__ == '__main__':
     )
 
     print('Published pipeline id: {}'.format(published_pipeline.id))
-
-    # # Create an experiment to run the pipeline
-    # exp = Experiment(workspace=workspace, name='asirra-ResNet50')
-    # run = exp.submit(pipeline)
-    # run.wait_for_completion(show_output=True)
